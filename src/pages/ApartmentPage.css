@@ -1,0 +1,72 @@
+.apartment-page {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, #E8E8E8 0%, #F5F5F5 50%, #E8E8E8 100%);
+  z-index: 9999;
+}
+
+.apartment-page canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.apartment-info {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, rgba(65, 105, 225, 0.95), rgba(30, 144, 255, 0.95));
+  padding: 15px 40px;
+  border-radius: 15px;
+  border: 3px solid #FFD700;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 10000;
+}
+
+.apartment-info h2 {
+  margin: 0;
+  color: #FFFFFF;
+  font-size: 28px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  font-weight: bold;
+}
+
+.apartment-exit-button-container {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+}
+
+.apartment-exit-button-container .exit-button {
+  padding: 15px 35px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #4169E1, #1E90FF);
+  border: 3px solid #FFD700;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
+}
+
+.apartment-exit-button-container .exit-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, #1E90FF, #4169E1);
+}
+
+.apartment-exit-button-container .exit-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}

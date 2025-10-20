@@ -1,0 +1,500 @@
+.house-road-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #3a5f3a;
+  overflow: hidden;
+}
+
+.road-network {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.horizontal-road {
+  position: absolute;
+  width: 100%;
+  height: min(8vh, 6vw);
+  min-height: 30px;
+  max-height: 80px;
+  background: #444;
+  border-top: 2px solid #666;
+  border-bottom: 2px solid #666;
+}
+
+.horizontal-road::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: repeating-linear-gradient(
+    to right,
+    #FFD700 0px,
+    #FFD700 20px,
+    transparent 20px,
+    transparent 40px
+  );
+  transform: translateY(-50%);
+}
+
+.road-1 {
+  top: 40%;
+}
+
+.road-2 {
+  top: 80%;
+}
+
+.vertical-road {
+  position: absolute;
+  width: min(6vw, 8vh);
+  min-width: 30px;
+  max-width: 80px;
+  height: 100%;
+  background: #444;
+  border-left: 2px solid #666;
+  border-right: 2px solid #666;
+}
+
+.vertical-road::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: repeating-linear-gradient(
+    to bottom,
+    #FFD700 0px,
+    #FFD700 20px,
+    transparent 20px,
+    transparent 40px
+  );
+  transform: translateX(-50%);
+}
+
+.road-3 {
+  left: 20%;
+}
+
+.road-4 {
+  left: 40%;
+}
+
+.road-5 {
+  left: 60%;
+}
+
+.green-blocks-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+.green-block {
+  position: absolute;
+  background: rgba(74, 124, 74, 0.3);
+  border: 1px solid rgba(90, 156, 90, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 0;
+}
+
+.green-block-top-left {
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+/* 도로를 피해서 정확한 녹색 영역만 지정 */
+
+/* 상단 행: 도로 위 (0% ~ 40%) */
+.green-block-top-left {
+  left: 1%;
+  top: 1%;
+  width: 18%;
+  height: 38%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 0.3fr 1fr 1fr;
+  grid-template-areas:
+    "label  label"
+    "house1 house2"
+    "house3 restaurant";
+  gap: 2px;
+}
+
+.green-block-top-center-left {
+  left: 25%;
+  overflow: hidden;
+  top: 1%;
+  width: 15%;
+  height: 38%;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr 1fr 1fr 1fr;
+  align-items: start;
+  justify-items: center;
+  padding: 5px;
+  gap: 3px;
+}
+
+.green-block-top-center-right {
+  left: 45%;
+  overflow: hidden;
+  align-items: start;
+
+  top: 1%;
+  width: 18%;
+  height: 38%;
+}
+
+.green-block-top-right {
+  left: 61%;
+  top: 1%;
+  width: 38%;
+  height: 38%;
+}
+
+/* 중간 행: 두 도로 사이 (40% ~ 80%) */
+.green-block-middle-left {
+  left: 1%;
+  top: 48%;
+  width: 18%;
+  height: 30%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "label label"
+    "temple1 temple2";
+  align-items: center;
+  justify-items: center;
+  padding: 5px;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.green-block-middle-center-left {
+  left:25%;
+  top: 48%;
+  width: 15%;
+  height: 32%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr 1fr;
+  grid-template-areas:
+    "label label"
+    "apt1 apt2"
+    "apt3 apt4";
+  align-items: center;
+  justify-items: center;
+  padding: 5px;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.green-block-middle-center-right {
+  left: 45%;
+  top: 48%;
+  width: 15%;
+  height: 30%;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "label"
+    "cityhall";
+  align-items: start;
+  justify-items: center;
+  padding: 5px;
+  gap: 3px;
+  overflow: hidden;
+
+}
+
+.green-block-middle-right {
+  left: 61%;
+  top: 48%;
+  width: 38%;
+  height: 30%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "label label"
+    "temple3 temple4";
+  align-items: center;
+  justify-items: center;
+  padding: 5px;
+  gap: 3px;
+  overflow: hidden;
+}
+
+/* 하단 행: 도로 아래 (80% ~ 100%) */
+.green-block-bottom-left {
+  left: 1%;
+  top: 81%;
+  width: 18%;
+  height: 18%;
+}
+
+.green-block-bottom-center-left {
+  left: 21%;
+  top: 81%;
+  width: 18%;
+  height: 18%;
+}
+
+.green-block-bottom-center-right {
+  left: 41%;
+  top: 81%;
+  width: 18%;
+  height: 18%;
+}
+
+.green-block-bottom-right {
+  left: 61%;
+  top: 81%;
+  width: 38%;
+  height: 18%;
+}
+
+.house-in-block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.house-in-block:hover {
+  transform: scale(1.1);
+}
+
+.block-label {
+  background: rgba(255, 255, 255, 0.9);
+  color: #2d4a2d;
+  font-size: min(4.5vw, 16px);
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 3px;
+  margin: 0;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  border: 1px solid #5a9c5a;
+  min-width: 80px;
+  max-width: 120px;
+  flex-shrink: 0;
+}
+
+.house-image {
+  width: min(15vw, 12vh, 40%);
+  height: min(12vh, 15vw, 30%);
+  max-width: 200px;
+  max-height: 150px;
+  min-width: 60px;
+  min-height: 45px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.3));
+}
+
+/* 개별 건물별 이미지 스타일 - Grid 레이아웃에 맞춤 */
+.indian-house-1 {
+  width: 100%;
+  height: 100%;
+  max-width: 144px;
+  max-height: 108px;
+}
+
+.indian-house-2 {
+  width: 100%;
+  height: 100%;
+  max-width: 144px;
+  max-height: 108px;
+}
+
+.indian-house-3 {
+  width: 100%;
+  height: 100%;
+  max-width: 144px;
+  max-height: 108px;
+}
+
+.indian-house-4 {
+  width: 100%;
+  height: 100%;
+  max-width: 144px;
+  max-height: 108px;
+}
+
+.indian-house-5 {
+  width: 100%;
+  height: 100%;
+  max-width: 144px;
+  max-height: 108px;
+}
+
+.indian-restaurant {
+  width: 100%;
+  height: 100%;
+  max-width: 200px;
+  max-height: 200px;
+}
+
+.school-building {
+  width: 100%;
+  height: 100%;
+  max-width: 200px;
+  max-height: 150px;
+}
+
+.park-building-1 {
+  width: 100%;
+  height: 100%;
+  max-width: 144px;
+  max-height: 108px;
+}
+
+.park-building-2 {
+  width: 100%;
+  height: 100%;
+  max-width: 144px;
+  max-height: 108px;
+}
+
+.park-building-3 {
+  width: 100%;
+  height: 100%;
+  max-width: 144px;
+  max-height: 108px;
+}
+
+.park-building-4 {
+  width: 100%;
+  height: 100%;
+  max-width: 144px;
+  max-height: 108px;
+}
+
+.temple-1 {
+  width: 100%;
+  height: 100%;
+  max-width: 200px;
+  max-height: 200px;
+  margin: 0;
+  padding: 0;
+  display: block;
+}
+
+.temple-2 {
+  width: 100%;
+  height: 100%;
+  max-width: 200px;
+  max-height: 150px;
+  margin: 0;
+  padding: 0;
+  display: block;
+}
+
+.temple-3 {
+  width: 100%;
+  height: 100%;
+  max-width: 200px;
+  max-height: 200px;
+  margin: 0;
+  padding: 0;
+  display: block;
+}
+
+.temple-4 {
+  width: 100%;
+  height: 100%;
+  max-width: 200px;
+  max-height: 150px;
+  margin: 0;
+  padding: 0;
+  display: block;
+}
+
+.apartment-1,
+.apartment-2,
+.apartment-3,
+.apartment-4 {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.city-hall {
+  width: 100%;
+  height: 100%;
+  max-width: 250px;
+  max-height: 250px;
+  min-width: 100px;
+  min-height: 100px;
+  margin: 0;
+  padding: 0;
+  display: block;
+  object-fit: contain;
+}
+
+.additional-house {
+  width: 100%;
+  height: 100%;
+  max-width: 200px;
+  max-height: 150px;
+}
+
+.house-name {
+  margin-top: 8px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  min-width: 100px;
+}
+
+@media (max-width: 1024px) {
+  .house-road-container {
+    width: 90vw;
+    height: 60vh;
+  }
+
+  .house-image {
+    width: 60px;
+    height: 60px;
+  }
+
+  .house-name {
+    font-size: 10px;
+    min-width: 60px;
+  }
+}

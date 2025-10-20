@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이란 스타일 건물과 모스크 - Canvas 2D</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #1a1f3a;
+            font-family: 'Arial', sans-serif;
+        }
+
+        #gameCanvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(26, 31, 58, 0.9);
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 2px solid #c9a961;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            color: #d4a574;
+        }
+
+        .info h2 {
+            margin: 0 0 10px 0;
+            font-size: 20px;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(26, 31, 58, 0.9);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid #c9a961;
+            color: #d4a574;
+        }
+
+        .controls p {
+            margin: 0;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .dialogue-box {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 700px;
+            background: rgba(26, 40, 71, 0.95);
+            padding: 25px 30px;
+            border-radius: 12px;
+            border: 3px solid rgba(201, 169, 97, 0.8);
+            color: #fff;
+            font-family: 'Georgia', serif;
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            display: none;
+        }
+
+        .character-portrait {
+            position: fixed;
+            bottom: 220px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            display: none;
+        }
+
+        .character-portrait img {
+            width: 350px;
+            height: 450px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.7));
+        }
+
+        .dialogue-box .character-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 12px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .dialogue-box .message {
+            font-size: 17px;
+            line-height: 1.7;
+            color: #e8dcc8;
+        }
+
+        .dialogue-box .continue-hint {
+            text-align: right;
+            margin-top: 12px;
+            font-size: 13px;
+            color: #c9a961;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h2>🕌 이란 마을 탐험</h2>
+        <p><strong>방향키 / WASD:</strong> 이동</p>
+        <p><strong>현재 위치:</strong> <span id="position">X: 0, Y: 0</span></p>
+        <p><strong>방향:</strong> <span id="direction">정면</span></p>
+    </div>
+
+    <div class="controls">
+        <p>⬆️ ⬇️ ⬅️ ➡️ 또는 W A S D 키로 이란 마을을 탐험하세요!</p>
+    </div>
+
+    <div id="characterPortrait" class="character-portrait">
+        <img id="portraitImage" src="" alt="캐릭터">
+    </div>
+
+    <div id="dialogueBox" class="dialogue-box">
+        <div class="character-name" id="dialogueName"></div>
+        <div class="message" id="dialogueMessage"></div>
+        <div class="continue-hint">▼ 스페이스를 눌러 계속...</div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        class IranianVillageGame {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+
+                // 캔버스 크기 설정
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+
+                // 캐릭터 상태
+                this.character = {
+                    x: this.canvas.width / 2,
+                    y: Math.max(600, this.canvas.height / 2),
+                    width: 60,
+                    height: 60,
+                    speed: 5,
+                    velocityX: 0,
+                    velocityY: 0,
+                    direction: 'front',
+                    isMoving: false
+                };
+
+                // 대화 시스템
+                this.dialogues = [
+                    { name: "보경 (Bogyeong)", message: "이란에 도착해서 라미르를 만나기로 했는데.. 이란 문화에 대해 배우기로 해서 기대돼", character: "big" }
+                ];
+                this.currentDialogue = 0;
+                this.dialogueActive = false;
+
+                // 이미지 로드
+                this.images = {};
+                this.imagesLoaded = 0;
+                this.totalImages = 8; // big, bogyeong 추가
+
+                this.loadImages();
+
+                // 키 입력
+                this.keys = {};
+                this.setupEventListeners();
+
+                // 애니메이션 프레임
+                this.animationFrame = 0;
+                this.animationSpeed = 10;
+                this.animationCounter = 0;
+
+                // 배경 요소들
+                this.generateScenery();
+            }
+
+            generateScenery() {
+                // 별들
+                this.stars = [];
+                for (let i = 0; i < 100; i++) {
+                    this.stars.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * (this.canvas.height * 0.5),
+                        size: Math.random() * 2 + 1,
+                        twinkleSpeed: Math.random() * 0.05 + 0.01,
+                        brightness: Math.random()
+                    });
+                }
+
+                // 도로 기준선
+                const roadY = this.canvas.height * 0.7;
+
+                // 이슬람 스타일 건물들 - 가로로 1줄 배치
+                this.buildings = [];
+                const spacing = 250;
+                const startX = 200;
+
+                // 건물 1: 모스크 스타일 (작은 돔)
+                this.buildings.push({
+                    x: startX,
+                    y: roadY,
+                    width: 180,
+                    height: 200,
+                    style: 'mosque1',
+                    doorX: startX,
+                    doorY: roadY,
+                    doorWidth: 50,
+                    doorHeight: 70
+                });
+
+                // 건물 2: 히잡 가게 (아치형 문)
+                this.buildings.push({
+                    x: startX + spacing,
+                    y: roadY,
+                    width: 200,
+                    height: 220,
+                    style: 'hijab',
+                    doorX: startX + spacing,
+                    doorY: roadY,
+                    doorWidth: 60,
+                    doorHeight: 80,
+                    signText: '히잡'
+                });
+
+                // 건물 3: 모스크 스타일 (쌍 첨탑)
+                this.buildings.push({
+                    x: startX + spacing * 2,
+                    y: roadY,
+                    width: 220,
+                    height: 240,
+                    style: 'mosque2',
+                    doorX: startX + spacing * 2,
+                    doorY: roadY,
+                    doorWidth: 55,
+                    doorHeight: 75
+                });
+
+                // 건물 4: 일반 이슬람 건물 (아치 창문)
+                this.buildings.push({
+                    x: startX + spacing * 3,
+                    y: roadY,
+                    width: 170,
+                    height: 190,
+                    style: 'islamic1',
+                    doorX: startX + spacing * 3,
+                    doorY: roadY,
+                    doorWidth: 50,
+                    doorHeight: 70
+                });
+
+                // 건물 5: 장식 돔 건물
+                this.buildings.push({
+                    x: startX + spacing * 4,
+                    y: roadY,
+                    width: 190,
+                    height: 210,
+                    style: 'islamic2',
+                    doorX: startX + spacing * 4,
+                    doorY: roadY,
+                    doorWidth: 52,
+                    doorHeight: 72
+                });
+
+                // 야자수들 (건물 사이)
+                this.palmTrees = [
+                    { x: startX - 80, y: roadY + 10 },
+                    { x: startX + spacing * 0.5 + 20, y: roadY + 10 },
+                    { x: startX + spacing * 1.5 + 30, y: roadY + 10 },
+                    { x: startX + spacing * 2.5 - 20, y: roadY + 10 },
+                    { x: startX + spacing * 3.5 + 10, y: roadY + 10 },
+                    { x: startX + spacing * 4 + 120, y: roadY + 10 }
+                ];
+
+                // 사막 언덕들
+                this.dunes = [
+                    { x: 0, y: this.canvas.height * 0.82, width: 500, height: 40 },
+                    { x: 400, y: this.canvas.height * 0.84, width: 600, height: 35 },
+                    { x: 900, y: this.canvas.height * 0.83, width: 550, height: 38 }
+                ];
+            }
+
+            loadImages() {
+                const imageNames = [
+                    'front1_no_bg',
+                    'front222',
+                    'left1_no_bg',
+                    'left2-removebg-preview',
+                    'right1_no_bg',
+                    'right2_no_bg',
+                    'big_no_bg',
+                    'bogyeong_no_bg'
+                ];
+
+                imageNames.forEach(name => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                        this.imagesLoaded++;
+                        if (this.imagesLoaded === this.totalImages) {
+                            this.start();
+                        }
+                    };
+                    img.onerror = () => {
+                        console.error(`Failed to load image: ${name}`);
+                        this.imagesLoaded++;
+                        if (this.imagesLoaded === this.totalImages) {
+                            this.start();
+                        }
+                    };
+                    img.src = `https://cdn.jsdelivr.net/gh/choimin1243/11122212/${name}.png`;
+                    this.images[name] = img;
+                });
+            }
+
+            setupEventListeners() {
+                window.addEventListener('keydown', (e) => {
+                    this.keys[e.key.toLowerCase()] = true;
+
+                    // 스페이스바로 대화 진행
+                    if (e.key === ' ' && this.dialogueActive) {
+                        e.preventDefault();
+                        this.showDialogue(this.currentDialogue + 1);
+                    }
+                });
+
+                window.addEventListener('keyup', (e) => {
+                    this.keys[e.key.toLowerCase()] = false;
+                });
+
+                window.addEventListener('resize', () => {
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = window.innerHeight;
+                    this.generateScenery();
+                });
+            }
+
+            showDialogue(index) {
+                if (index >= this.dialogues.length) {
+                    this.hideDialogue();
+                    return;
+                }
+
+                this.dialogueActive = true;
+                this.currentDialogue = index;
+                const dialogue = this.dialogues[index];
+
+                // 대화 UI 표시
+                document.getElementById('dialogueName').textContent = dialogue.name;
+                document.getElementById('dialogueMessage').textContent = dialogue.message;
+                document.getElementById('dialogueBox').style.display = 'block';
+
+                // 캐릭터 초상화 표시
+                const portrait = document.getElementById('characterPortrait');
+                const portraitImg = document.getElementById('portraitImage');
+
+                const characterType = dialogue.character || 'big';
+                const imageUrl = characterType === 'bogyeong'
+                    ? 'https://cdn.jsdelivr.net/gh/choimin1243/11122212/bogyeong_no_bg.png'
+                    : 'https://cdn.jsdelivr.net/gh/choimin1243/11122212/big_no_bg.png';
+
+                portraitImg.src = imageUrl;
+                portrait.style.display = 'block';
+            }
+
+            hideDialogue() {
+                this.dialogueActive = false;
+                document.getElementById('dialogueBox').style.display = 'none';
+                document.getElementById('characterPortrait').style.display = 'none';
+            }
+
+            update() {
+                // 대화 중에는 움직임 제한
+                if (this.dialogueActive) {
+                    this.character.velocityX *= 0.9;
+                    this.character.velocityY *= 0.9;
+                    return;
+                }
+
+                // 이동 처리
+                let targetVelX = 0;
+                let targetVelY = 0;
+                let newDirection = this.character.direction;
+
+                if (this.keys['arrowleft'] || this.keys['a']) {
+                    targetVelX = -this.character.speed;
+                    newDirection = 'left';
+                }
+                if (this.keys['arrowright'] || this.keys['d']) {
+                    targetVelX = this.character.speed;
+                    newDirection = 'right';
+                }
+                if (this.keys['arrowup'] || this.keys['w']) {
+                    targetVelY = -this.character.speed;
+                    if (!newDirection.includes('left') && !newDirection.includes('right')) {
+                        newDirection = 'front';
+                    }
+                }
+                if (this.keys['arrowdown'] || this.keys['s']) {
+                    targetVelY = this.character.speed;
+                    if (!newDirection.includes('left') && !newDirection.includes('right')) {
+                        newDirection = 'front';
+                    }
+                }
+
+                // 부드러운 가속
+                this.character.velocityX += (targetVelX - this.character.velocityX) * 0.2;
+                this.character.velocityY += (targetVelY - this.character.velocityY) * 0.2;
+
+                // 이동 여부 확인
+                this.character.isMoving = Math.abs(this.character.velocityX) > 0.1 || Math.abs(this.character.velocityY) > 0.1;
+
+                if (this.character.isMoving) {
+                    this.character.direction = newDirection;
+                }
+
+                // 위치 업데이트
+                this.character.x += this.character.velocityX;
+                this.character.y += this.character.velocityY;
+
+                // 경계 체크
+                this.character.x = Math.max(this.character.width / 2, Math.min(this.canvas.width - this.character.width / 2, this.character.x));
+                // Y 좌표는 최소 600, 최대는 화면 하단
+                this.character.y = Math.max(600, Math.min(this.canvas.height - this.character.height / 2, this.character.y));
+
+                // 문 앞에 있는지 체크 (히잡 가게 문)
+                this.character.visible = true;
+                this.buildings.forEach(building => {
+                    if (building.style === 'hijab') {
+                        const distX = Math.abs(this.character.x - building.doorX);
+                        const distY = Math.abs(this.character.y - building.doorY);
+
+                        // 문 앞 50px 범위 내에 있으면 캐릭터 숨김
+                        if (distX < building.doorWidth && distY < 30) {
+                            this.character.visible = false;
+                        }
+                    }
+                });
+
+                // 애니메이션 프레임 업데이트
+                if (this.character.isMoving) {
+                    this.animationCounter++;
+                    if (this.animationCounter >= this.animationSpeed) {
+                        this.animationFrame = (this.animationFrame + 1) % 2;
+                        this.animationCounter = 0;
+                    }
+                } else {
+                    this.animationFrame = 0;
+                }
+
+                // 별 반짝임 업데이트
+                this.stars.forEach(star => {
+                    star.brightness += star.twinkleSpeed;
+                    if (star.brightness > 1 || star.brightness < 0) {
+                        star.twinkleSpeed = -star.twinkleSpeed;
+                    }
+                });
+
+                // UI 업데이트
+                this.updateUI();
+            }
+
+            updateUI() {
+                document.getElementById('position').textContent =
+                    `X: ${Math.round(this.character.x)}, Y: ${Math.round(this.character.y)}`;
+
+                const directionText = {
+                    'front': '정면',
+                    'left': '왼쪽',
+                    'right': '오른쪽'
+                };
+                document.getElementById('direction').textContent = directionText[this.character.direction] || '정면';
+            }
+
+            drawBackground() {
+                // 밤하늘 그라디언트
+                const skyGradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height * 0.7);
+                skyGradient.addColorStop(0, '#1a1f3a');
+                skyGradient.addColorStop(0.2, '#2d3a5f');
+                skyGradient.addColorStop(0.5, '#7d4e57');
+                skyGradient.addColorStop(0.8, '#b8735a');
+                skyGradient.addColorStop(1, '#c9a961');
+                this.ctx.fillStyle = skyGradient;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height * 0.7);
+
+                // 별 그리기
+                this.stars.forEach(star => {
+                    this.ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+
+                // 달
+                this.ctx.save();
+                this.ctx.fillStyle = '#ffe4b5';
+                this.ctx.shadowBlur = 30;
+                this.ctx.shadowColor = 'rgba(255, 228, 181, 0.5)';
+                this.ctx.beginPath();
+                this.ctx.arc(this.canvas.width - 200, 100, 45, 0, Math.PI * 2);
+                this.ctx.fill();
+
+                // 달 크레이터 효과
+                this.ctx.shadowBlur = 0;
+                this.ctx.fillStyle = 'rgba(26, 31, 58, 0.1)';
+                this.ctx.beginPath();
+                this.ctx.arc(this.canvas.width - 185, 95, 45, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.restore();
+
+                // 땅/사막
+                const groundGradient = this.ctx.createLinearGradient(0, this.canvas.height * 0.7, 0, this.canvas.height);
+                groundGradient.addColorStop(0, '#c9a961');
+                groundGradient.addColorStop(0.3, '#b8935a');
+                groundGradient.addColorStop(1, '#8b7355');
+                this.ctx.fillStyle = groundGradient;
+                this.ctx.fillRect(0, this.canvas.height * 0.7, this.canvas.width, this.canvas.height * 0.3);
+
+                // 도로 그리기 (이란 스타일)
+                const roadY = this.canvas.height * 0.7;
+                const roadHeight = 80;
+
+                // 메인 도로
+                this.ctx.fillStyle = '#8b7060';
+                this.ctx.fillRect(0, roadY, this.canvas.width, roadHeight);
+
+                // 도로 테두리 (상단)
+                this.ctx.strokeStyle = '#6b5545';
+                this.ctx.lineWidth = 3;
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, roadY);
+                this.ctx.lineTo(this.canvas.width, roadY);
+                this.ctx.stroke();
+
+                // 도로 장식 패턴 (이슬람 스타일)
+                this.ctx.strokeStyle = '#a08565';
+                this.ctx.lineWidth = 2;
+                for (let x = 0; x < this.canvas.width; x += 60) {
+                    // 다이아몬드 패턴
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x + 30, roadY + 15);
+                    this.ctx.lineTo(x + 40, roadY + 25);
+                    this.ctx.lineTo(x + 30, roadY + 35);
+                    this.ctx.lineTo(x + 20, roadY + 25);
+                    this.ctx.closePath();
+                    this.ctx.stroke();
+                }
+
+                // 사막 언덕 그리기
+                this.dunes.forEach(dune => {
+                    this.ctx.fillStyle = '#a08060';
+                    this.ctx.beginPath();
+                    this.ctx.ellipse(dune.x + dune.width / 2, dune.y, dune.width / 2, dune.height / 2, 0, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+            }
+
+            drawBuilding(building) {
+                const { x, y, width, height, style, signText } = building;
+
+                this.ctx.save();
+
+                // 건물 본체
+                this.ctx.fillStyle = '#d4b896';
+                this.ctx.fillRect(x - width / 2, y - height, width, height);
+
+                // 건물 테두리
+                this.ctx.strokeStyle = '#a08848';
+                this.ctx.lineWidth = 4;
+                this.ctx.strokeRect(x - width / 2, y - height, width, height);
+
+                if (style === 'mosque1') {
+                    // 작은 돔 모스크
+                    // 돔 지붕
+                    this.ctx.fillStyle = '#5a9a5a';
+                    this.ctx.beginPath();
+                    this.ctx.ellipse(x, y - height, width * 0.4, 35, 0, Math.PI, 0, true);
+                    this.ctx.fill();
+                    this.ctx.strokeStyle = '#4a8a4a';
+                    this.ctx.lineWidth = 3;
+                    this.ctx.stroke();
+
+                    // 초승달 장식
+                    this.ctx.fillStyle = '#ffd700';
+                    this.ctx.beginPath();
+                    this.ctx.arc(x - 4, y - height - 38, 6, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y - height - 38, 6, 0, Math.PI * 2);
+                    this.ctx.fillStyle = '#5a9a5a';
+                    this.ctx.fill();
+
+                    // 아치형 창문들
+                    [-40, 40].forEach(offsetX => {
+                        this.ctx.fillStyle = '#6b5d4f';
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(x + offsetX - 15, y - height + 80);
+                        this.ctx.lineTo(x + offsetX - 15, y - height + 50);
+                        this.ctx.quadraticCurveTo(x + offsetX - 15, y - height + 35, x + offsetX, y - height + 35);
+                        this.ctx.quadraticCurveTo(x + offsetX + 15, y - height + 35, x + offsetX + 15, y - height + 50);
+                        this.ctx.lineTo(x + offsetX + 15, y - height + 80);
+                        this.ctx.closePath();
+                        this.ctx.fill();
+                        this.ctx.strokeStyle = '#4a3828';
+                        this.ctx.lineWidth = 2;
+                        this.ctx.stroke();
+                    });
+
+                    // 아치형 문
+                    this.ctx.fillStyle = '#3a2818';
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x - 25, y);
+                    this.ctx.lineTo(x - 25, y - 50);
+                    this.ctx.quadraticCurveTo(x - 25, y - 70, x, y - 70);
+                    this.ctx.quadraticCurveTo(x + 25, y - 70, x + 25, y - 50);
+                    this.ctx.lineTo(x + 25, y);
+                    this.ctx.closePath();
+                    this.ctx.fill();
+                    this.ctx.strokeStyle = '#2a1808';
+                    this.ctx.lineWidth = 3;
+                    this.ctx.stroke();
+
+                } else if (style === 'hijab') {
+                    // 히잡 가게 - 특별한 디자인
+                    // 장식 지붕
+                    this.ctx.fillStyle = '#c94a4a';
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x - width / 2 - 10, y - height);
+                    this.ctx.lineTo(x, y - height - 35);
+                    this.ctx.lineTo(x + width / 2 + 10, y - height);
+                    this.ctx.closePath();
+                    this.ctx.fill();
+                    this.ctx.strokeStyle = '#a03a3a';
+                    this.ctx.lineWidth = 3;
+                    this.ctx.stroke();
+
+                    // 간판 배경
+                    this.ctx.fillStyle = '#2a1f3a';
+                    this.ctx.fillRect(x - 80, y - height - 70, 160, 40);
+                    this.ctx.strokeStyle = '#ffd700';
+                    this.ctx.lineWidth = 3;
+                    this.ctx.strokeRect(x - 80, y - height - 70, 160, 40);
+
+                    // 간판 장식
+                    for (let i = 0; i < 5; i++) {
+                        this.ctx.fillStyle = '#ffd700';
+                        this.ctx.beginPath();
+                        this.ctx.arc(x - 60 + i * 30, y - height - 75, 4, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+
+                    // "히잡" 텍스트
+                    this.ctx.fillStyle = '#ffd700';
+                    this.ctx.font = 'bold 32px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+                    this.ctx.fillText('히잡', x, y - height - 50);
+
+                    // 아치형 대문 (큼)
+                    this.ctx.fillStyle = '#2a1808';
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x - 30, y);
+                    this.ctx.lineTo(x - 30, y - 60);
+                    this.ctx.quadraticCurveTo(x - 30, y - 80, x, y - 80);
+                    this.ctx.quadraticCurveTo(x + 30, y - 80, x + 30, y - 60);
+                    this.ctx.lineTo(x + 30, y);
+                    this.ctx.closePath();
+                    this.ctx.fill();
+                    this.ctx.strokeStyle = '#ffd700';
+                    this.ctx.lineWidth = 3;
+                    this.ctx.stroke();
+
+                    // 문 손잡이
+                    this.ctx.fillStyle = '#ffd700';
+                    this.ctx.beginPath();
+                    this.ctx.arc(x + 15, y - 40, 5, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    // 장식 창문들
+                    [-50, 50].forEach(offsetX => {
+                        this.ctx.fillStyle = '#8a6a8a';
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(x + offsetX - 15, y - height + 100);
+                        this.ctx.lineTo(x + offsetX - 15, y - height + 70);
+                        this.ctx.quadraticCurveTo(x + offsetX - 15, y - height + 55, x + offsetX, y - height + 55);
+                        this.ctx.quadraticCurveTo(x + offsetX + 15, y - height + 55, x + offsetX + 15, y - height + 70);
+                        this.ctx.lineTo(x + offsetX + 15, y - height + 100);
+                        this.ctx.closePath();
+                        this.ctx.fill();
+                        this.ctx.strokeStyle = '#6a4a6a';
+                        this.ctx.lineWidth = 2;
+                        this.ctx.stroke();
+                    });
+
+                } else if (style === 'mosque2') {
+                    // 쌍 첨탑 모스크
+                    // 중앙 큰 돔
+                    this.ctx.fillStyle = '#4a8a7a';
+                    this.ctx.beginPath();
+                    this.ctx.ellipse(x, y - height, width * 0.45, 40, 0, Math.PI, 0, true);
+                    this.ctx.fill();
+                    this.ctx.strokeStyle = '#3a7a6a';
+                    this.ctx.lineWidth = 3;
+                    this.ctx.stroke();
+
+                    // 중앙 초승달
+                    this.ctx.fillStyle = '#ffd700';
+                    this.ctx.beginPath();
+                    this.ctx.arc(x - 5, y - height - 45, 7, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y - height - 45, 7, 0, Math.PI * 2);
+                    this.ctx.fillStyle = '#4a8a7a';
+                    this.ctx.fill();
+
+                    // 좌우 작은 첨탑
+                    [-70, 70].forEach(offsetX => {
+                        // 첨탑 기둥
+                        this.ctx.fillStyle = '#b8935a';
+                        this.ctx.fillRect(x + offsetX - 12, y - height + 40, 24, 120);
+                        this.ctx.strokeStyle = '#a08848';
+                        this.ctx.lineWidth = 3;
+                        this.ctx.strokeRect(x + offsetX - 12, y - height + 40, 24, 120);
+
+                        // 첨탑 발코니
+                        this.ctx.fillStyle = '#c9a961';
+                        this.ctx.fillRect(x + offsetX - 18, y - height + 100, 36, 12);
+                        this.ctx.strokeRect(x + offsetX - 18, y - height + 100, 36, 12);
+
+                        // 첨탑 돔
+                        this.ctx.fillStyle = '#4a8a7a';
+                        this.ctx.beginPath();
+                        this.ctx.ellipse(x + offsetX, y - height + 40, 16, 10, 0, Math.PI, 0, true);
+                        this.ctx.fill();
+                        this.ctx.strokeStyle = '#3a7a6a';
+                        this.ctx.stroke();
+
+                        // 첨탑 초승달
+                        this.ctx.fillStyle = '#ffd700';
+                        this.ctx.beginPath();
+                        this.ctx.arc(x + offsetX - 3, y - height + 27, 5, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        this.ctx.beginPath();
+                        this.ctx.arc(x + offsetX, y - height + 27, 5, 0, Math.PI * 2);
+                        this.ctx.fillStyle = '#4a8a7a';
+                        this.ctx.fill();
+                    });
+
+                    // 아치형 문
+                    this.ctx.fillStyle = '#2a1808';
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x - 27, y);
+                    this.ctx.lineTo(x - 27, y - 55);
+                    this.ctx.quadraticCurveTo(x - 27, y - 75, x, y - 75);
+                    this.ctx.quadraticCurveTo(x + 27, y - 75, x + 27, y - 55);
+                    this.ctx.lineTo(x + 27, y);
+                    this.ctx.closePath();
+                    this.ctx.fill();
+                    this.ctx.strokeStyle = '#ffd700';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.stroke();
+
+                } else if (style === 'islamic1') {
+                    // 일반 이슬람 건물 (아치 창문)
+                    // 평평한 지붕
+                    this.ctx.fillStyle = '#a08848';
+                    this.ctx.fillRect(x - width / 2 - 8, y - height - 12, width + 16, 12);
+                    this.ctx.strokeStyle = '#806838';
+                    this.ctx.lineWidth = 3;
+                    this.ctx.strokeRect(x - width / 2 - 8, y - height - 12, width + 16, 12);
+
+                    // 아치형 창문들 (3개)
+                    for (let i = -1; i <= 1; i++) {
+                        this.ctx.fillStyle = '#6b5d4f';
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(x + i * 45 - 15, y - height + 100);
+                        this.ctx.lineTo(x + i * 45 - 15, y - height + 65);
+                        this.ctx.quadraticCurveTo(x + i * 45 - 15, y - height + 50, x + i * 45, y - height + 50);
+                        this.ctx.quadraticCurveTo(x + i * 45 + 15, y - height + 50, x + i * 45 + 15, y - height + 65);
+                        this.ctx.lineTo(x + i * 45 + 15, y - height + 100);
+                        this.ctx.closePath();
+                        this.ctx.fill();
+                        this.ctx.strokeStyle = '#4a3828';
+                        this.ctx.lineWidth = 2;
+                        this.ctx.stroke();
+                    }
+
+                    // 아치형 문
+                    this.ctx.fillStyle = '#3a2818';
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x - 25, y);
+                    this.ctx.lineTo(x - 25, y - 50);
+                    this.ctx.quadraticCurveTo(x - 25, y - 70, x, y - 70);
+                    this.ctx.quadraticCurveTo(x + 25, y - 70, x + 25, y - 50);
+                    this.ctx.lineTo(x + 25, y);
+                    this.ctx.closePath();
+                    this.ctx.fill();
+                    this.ctx.strokeStyle = '#2a1808';
+                    this.ctx.lineWidth = 3;
+                    this.ctx.stroke();
+
+                } else if (style === 'islamic2') {
+                    // 장식 돔 건물
+                    // 작은 돔 3개
+                    [-50, 0, 50].forEach((offsetX, i) => {
+                        const domeSize = i === 1 ? 45 : 35;
+                        this.ctx.fillStyle = i === 1 ? '#6a8a9a' : '#5a7a8a';
+                        this.ctx.beginPath();
+                        this.ctx.ellipse(x + offsetX, y - height, domeSize, domeSize * 0.6, 0, Math.PI, 0, true);
+                        this.ctx.fill();
+                        this.ctx.strokeStyle = i === 1 ? '#5a7a8a' : '#4a6a7a';
+                        this.ctx.lineWidth = 2;
+                        this.ctx.stroke();
+
+                        if (i === 1) {
+                            // 중앙 돔에 초승달
+                            this.ctx.fillStyle = '#ffd700';
+                            this.ctx.beginPath();
+                            this.ctx.arc(x + offsetX - 4, y - height - domeSize * 0.6 - 5, 5, 0, Math.PI * 2);
+                            this.ctx.fill();
+                            this.ctx.beginPath();
+                            this.ctx.arc(x + offsetX, y - height - domeSize * 0.6 - 5, 5, 0, Math.PI * 2);
+                            this.ctx.fillStyle = '#6a8a9a';
+                            this.ctx.fill();
+                        }
+                    });
+
+                    // 아치형 창문들
+                    [-40, 40].forEach(offsetX => {
+                        this.ctx.fillStyle = '#7b6d5f';
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(x + offsetX - 15, y - height + 120);
+                        this.ctx.lineTo(x + offsetX - 15, y - height + 85);
+                        this.ctx.quadraticCurveTo(x + offsetX - 15, y - height + 70, x + offsetX, y - height + 70);
+                        this.ctx.quadraticCurveTo(x + offsetX + 15, y - height + 70, x + offsetX + 15, y - height + 85);
+                        this.ctx.lineTo(x + offsetX + 15, y - height + 120);
+                        this.ctx.closePath();
+                        this.ctx.fill();
+                        this.ctx.strokeStyle = '#5a4828';
+                        this.ctx.lineWidth = 2;
+                        this.ctx.stroke();
+                    });
+
+                    // 아치형 문
+                    this.ctx.fillStyle = '#2a1808';
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x - 26, y);
+                    this.ctx.lineTo(x - 26, y - 52);
+                    this.ctx.quadraticCurveTo(x - 26, y - 72, x, y - 72);
+                    this.ctx.quadraticCurveTo(x + 26, y - 72, x + 26, y - 52);
+                    this.ctx.lineTo(x + 26, y);
+                    this.ctx.closePath();
+                    this.ctx.fill();
+                    this.ctx.strokeStyle = '#1a0808';
+                    this.ctx.lineWidth = 3;
+                    this.ctx.stroke();
+                }
+
+                this.ctx.restore();
+            }
+
+            drawPalmTree(x, y) {
+                // 야자수 줄기
+                this.ctx.fillStyle = '#8b6f47';
+                this.ctx.fillRect(x - 7.5, y - 80, 15, 80);
+
+                // 줄기 질감
+                this.ctx.strokeStyle = '#6b5537';
+                this.ctx.lineWidth = 2;
+                for (let i = 0; i < 5; i++) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x - 7.5, y - 15 - i * 15);
+                    this.ctx.lineTo(x + 7.5, y - 15 - i * 15);
+                    this.ctx.stroke();
+                }
+
+                // 야자수 잎
+                this.ctx.save();
+                this.ctx.translate(x, y - 80);
+
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i * Math.PI * 2) / 8;
+                    this.ctx.save();
+                    this.ctx.rotate(angle);
+
+                    // 잎 그리기
+                    this.ctx.fillStyle = '#4a7c4a';
+                    this.ctx.beginPath();
+                    this.ctx.ellipse(25, 0, 35, 10, 0, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    // 잎 테두리
+                    this.ctx.strokeStyle = '#3a6c3a';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.stroke();
+
+                    this.ctx.restore();
+                }
+
+                this.ctx.restore();
+            }
+
+            drawCharacter() {
+                // 캐릭터가 보이지 않으면 그리지 않음
+                if (!this.character.visible) {
+                    return;
+                }
+
+                // 그림자
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                this.ctx.beginPath();
+                this.ctx.ellipse(
+                    this.character.x,
+                    this.character.y + this.character.height / 2 + 10,
+                    this.character.width * 0.3,
+                    this.character.height * 0.1,
+                    0, 0, Math.PI * 2
+                );
+                this.ctx.fill();
+
+                // 캐릭터 이미지 선택
+                let imageName;
+                if (this.character.direction === 'left') {
+                    imageName = this.animationFrame === 0 ? 'left1_no_bg' : 'left2-removebg-preview';
+                } else if (this.character.direction === 'right') {
+                    imageName = this.animationFrame === 0 ? 'right1_no_bg' : 'right2_no_bg';
+                } else { // front
+                    imageName = this.animationFrame === 0 ? 'front1_no_bg' : 'front222';
+                }
+
+                const img = this.images[imageName];
+                if (img && img.complete) {
+                    const targetWidth = this.character.width;
+                    const targetHeight = this.character.height;
+                    const imgRatio = img.width / img.height;
+                    const targetRatio = targetWidth / targetHeight;
+
+                    let drawWidth, drawHeight, offsetX, offsetY;
+
+                    if (imgRatio > targetRatio) {
+                        drawWidth = targetWidth;
+                        drawHeight = targetWidth / imgRatio;
+                        offsetX = 0;
+                        offsetY = (targetHeight - drawHeight) / 2;
+                    } else {
+                        drawHeight = targetHeight;
+                        drawWidth = targetHeight * imgRatio;
+                        offsetX = (targetWidth - drawWidth) / 2;
+                        offsetY = 0;
+                    }
+
+                    this.ctx.drawImage(
+                        img,
+                        this.character.x - this.character.width / 2 + offsetX,
+                        this.character.y - this.character.height / 2 + offsetY,
+                        drawWidth,
+                        drawHeight
+                    );
+                }
+            }
+
+            draw() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // 배경 그리기
+                this.drawBackground();
+
+                // 건물들 그리기 (이슬람 스타일)
+                this.buildings.forEach(building => {
+                    this.drawBuilding(building);
+                });
+
+                // 야자수들 그리기
+                this.palmTrees.forEach(tree => {
+                    this.drawPalmTree(tree.x, tree.y);
+                });
+
+                // 캐릭터 그리기 (가장 앞)
+                this.drawCharacter();
+            }
+
+            gameLoop() {
+                this.update();
+                this.draw();
+                requestAnimationFrame(() => this.gameLoop());
+            }
+
+            start() {
+                console.log('이란 마을 게임 시작! 모든 이미지 로드 완료');
+
+                // 게임 시작 1초 후 오프닝 대화 시작
+                setTimeout(() => {
+                    this.showDialogue(0);
+                }, 1000);
+
+                this.gameLoop();
+            }
+        }
+
+        // 게임 시작
+        window.addEventListener('load', () => {
+            new IranianVillageGame();
+        });
+    </script>
+</body>
+</html>
