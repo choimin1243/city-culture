@@ -5,6 +5,7 @@ import ParkPage from '../pages/ParkPage';
 import TemplePage from '../pages/TemplePage';
 import ApartmentPage from '../pages/ApartmentPage';
 import CityHallPage from '../pages/CityHallPage';
+import IslamMosquePage from '../pages/IslamMosquePage';
 
 const IranCharacter = () => {
   const canvasRef = useRef(null);
@@ -14,34 +15,39 @@ const IranCharacter = () => {
   const [showTemple, setShowTemple] = useState(false);
   const [showApartment, setShowApartment] = useState(false);
   const [showCityHall, setShowCityHall] = useState(false);
+  const [showIslamMosque, setShowIslamMosque] = useState(false);
   const handleExitRestaurantRef = useRef(null);
   const handleExitParkRef = useRef(null);
   const handleExitTempleRef = useRef(null);
   const handleExitApartmentRef = useRef(null);
   const handleExitCityHallRef = useRef(null);
+  const handleExitIslamMosqueRef = useRef(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isNearRestaurant, setIsNearRestaurant] = useState(false);
   const [isNearPark, setIsNearPark] = useState(false);
   const [isNearTemple, setIsNearTemple] = useState(false);
   const [isNearApartment, setIsNearApartment] = useState(false);
   const [isNearCityHall, setIsNearCityHall] = useState(false);
+  const [isNearIslamMosque, setIsNearIslamMosque] = useState(false);
   const handleNearRestaurantRef = useRef(null);
   const handleNearParkRef = useRef(null);
   const handleNearTempleRef = useRef(null);
   const handleNearApartmentRef = useRef(null);
   const handleNearCityHallRef = useRef(null);
+  const handleNearIslamMosqueRef = useRef(null);
   const isNearRestaurantRef = useRef(false);
   const isNearParkRef = useRef(false);
   const isNearTempleRef = useRef(false);
   const isNearApartmentRef = useRef(false);
   const isNearCityHallRef = useRef(false);
+  const isNearIslamMosqueRef = useRef(false);
 
   // 금액과 똥 개수 상태
   const [money, setMoney] = useState(10000);
   const [poopCount, setPoopCount] = useState(0);
 
   useEffect(() => {
-    if (showRestaurant || showPark || showTemple || showApartment || showCityHall) return; // 레스토랑이나 공원, 사원, 아파트, 시청이 표시 중이면 게임 루프 시작하지 않음
+    if (showRestaurant || showPark || showTemple || showApartment || showCityHall || showIslamMosque) return; // 레스토랑이나 공원, 사원, 아파트, 시청, 이슬람 사원이 표시 중이면 게임 루프 시작하지 않음
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -121,6 +127,21 @@ const IranCharacter = () => {
       if (cityHallElements.length > 0) {
         const cityHallImg = cityHallElements[0]; // 첫 번째 요소가 시청
         const rect = cityHallImg.getBoundingClientRect();
+        return {
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+          width: rect.width,
+          height: rect.height
+        };
+      }
+      return null;
+    };
+
+    // 이슬람 사원 이미지 DOM 요소 찾기
+    const getIslamMosqueImageBounds = () => {
+      const islamMosqueImg = document.querySelector('.house-image.islam-mosque');
+      if (islamMosqueImg) {
+        const rect = islamMosqueImg.getBoundingClientRect();
         return {
           x: rect.left + rect.width / 2,
           y: rect.top + rect.height / 2,
@@ -218,7 +239,7 @@ const IranCharacter = () => {
         window.removeEventListener('keyup', this.handleKeyUp);
       }
 
-      update(onNearRestaurant, onNearPark, onNearTemple, onNearApartment, onNearCityHall, getRestaurantBounds, getParkBounds, getTempleBounds, getApartmentBounds, getCityHallBounds) {
+      update(onNearRestaurant, onNearPark, onNearTemple, onNearApartment, onNearCityHall, onNearIslamMosque, getRestaurantBounds, getParkBounds, getTempleBounds, getApartmentBounds, getCityHallBounds, getIslamMosqueBounds) {
         // 이동 처리
         let targetVelX = 0;
         let targetVelY = 0;
@@ -352,6 +373,24 @@ const IranCharacter = () => {
 
         if (onNearCityHall) {
           onNearCityHall(isNearCityHall);
+        }
+
+        // 이슬람 사원 근처 여부 체크 (실제 DOM 이미지 위치 기반)
+        let isNearIslamMosque = false;
+        if (getIslamMosqueBounds) {
+          const islamMosqueBounds = getIslamMosqueBounds();
+          if (islamMosqueBounds) {
+            const dx = this.x - islamMosqueBounds.x;
+            const dy = this.y - islamMosqueBounds.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            // 이슬람 사원 이미지 크기의 절반 + 여유 공간
+            const triggerDistance = Math.max(islamMosqueBounds.width, islamMosqueBounds.height) / 2 + 50;
+            isNearIslamMosque = distance < triggerDistance;
+          }
+        }
+
+        if (onNearIslamMosque) {
+          onNearIslamMosque(isNearIslamMosque);
         }
 
         // 애니메이션 프레임 업데이트
@@ -496,6 +535,18 @@ const IranCharacter = () => {
       });
     };
 
+    // handleNearIslamMosque를 ref에 저장
+    handleNearIslamMosqueRef.current = (isNear) => {
+      isNearIslamMosqueRef.current = isNear;
+      // 상태가 실제로 변경될 때만 setState 호출
+      setIsNearIslamMosque(prev => {
+        if (prev !== isNear) {
+          return isNear;
+        }
+        return prev;
+      });
+    };
+
     // Exit handler들을 ref에 저장
     handleExitRestaurantRef.current = () => {
       // 레스토랑 닫기
@@ -522,22 +573,29 @@ const IranCharacter = () => {
       setShowCityHall(false);
     };
 
+    handleExitIslamMosqueRef.current = () => {
+      // 이슬람 사원 닫기
+      setShowIslamMosque(false);
+    };
+
     const gameLoop = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // ref를 통해 호출, DOM 요소 위치 함수도 전달
-      if (handleNearRestaurantRef.current && handleNearParkRef.current && handleNearTempleRef.current && handleNearApartmentRef.current && handleNearCityHallRef.current) {
+      if (handleNearRestaurantRef.current && handleNearParkRef.current && handleNearTempleRef.current && handleNearApartmentRef.current && handleNearCityHallRef.current && handleNearIslamMosqueRef.current) {
         character.update(
           handleNearRestaurantRef.current,
           handleNearParkRef.current,
           handleNearTempleRef.current,
           handleNearApartmentRef.current,
           handleNearCityHallRef.current,
+          handleNearIslamMosqueRef.current,
           getRestaurantImageBounds,
           getParkImageBounds,
           getTempleImageBounds,
           getApartmentImageBounds,
-          getCityHallImageBounds
+          getCityHallImageBounds,
+          getIslamMosqueImageBounds
         );
       }
 
@@ -575,7 +633,7 @@ const IranCharacter = () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [showRestaurant, showPark, showTemple, showApartment, showCityHall]); // showRestaurant, showPark, showTemple, showApartment, showCityHall이 변경되면 useEffect 재실행
+  }, [showRestaurant, showPark, showTemple, showApartment, showCityHall, showIslamMosque]); // 건물 표시 상태가 변경되면 useEffect 재실행
 
   const handleExitRestaurant = () => {
     if (handleExitRestaurantRef.current) {
@@ -692,6 +750,29 @@ const IranCharacter = () => {
     setShowCityHall(true);
   };
 
+  const handleExitIslamMosque = () => {
+    if (handleExitIslamMosqueRef.current) {
+      handleExitIslamMosqueRef.current();
+    }
+    // 이슬람 사원 아래쪽으로 캐릭터 위치 이동
+    setTimeout(() => {
+      if (gameRef.current) {
+        const islamMosqueImg = document.querySelector('.house-image.islam-mosque');
+        if (islamMosqueImg) {
+          const rect = islamMosqueImg.getBoundingClientRect();
+          gameRef.current.setPosition(
+            rect.left + rect.width / 2,
+            rect.bottom + 80
+          );
+        }
+      }
+    }, 100);
+  };
+
+  const handleEnterIslamMosque = () => {
+    setShowIslamMosque(true);
+  };
+
   if (showRestaurant) {
     return <IndianRestaurantPage onExit={handleExitRestaurant} />;
   }
@@ -710,6 +791,10 @@ const IranCharacter = () => {
 
   if (showCityHall) {
     return <CityHallPage onExit={handleExitCityHall} />;
+  }
+
+  if (showIslamMosque) {
+    return <IslamMosquePage onExit={handleExitIslamMosque} />;
   }
 
   return (
@@ -763,6 +848,13 @@ const IranCharacter = () => {
         <div className="cityhall-entrance-button-overlay">
           <button onClick={handleEnterCityHall} className="cityhall-entrance-button">
             🏛️ 시청 들어가기
+          </button>
+        </div>
+      )}
+      {isNearIslamMosque && (
+        <div className="islam-mosque-entrance-button-overlay">
+          <button onClick={handleEnterIslamMosque} className="islam-mosque-entrance-button">
+            🕌 이슬람 사원 들어가기
           </button>
         </div>
       )}

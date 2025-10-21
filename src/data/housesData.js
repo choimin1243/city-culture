@@ -100,25 +100,6 @@ export const initialHouses = [
     block: { row: 0, col: 1 }
   },
   {
-    id: 11,
-    name: '사원1',
-    image: 'https://cdn.jsdelivr.net/gh/choimin1243/building/temple.png',
-    position: getBlockPosition(0, 0, 500, 30),
-    type: 'religious',
-    className: 'temple-1',
-    block: { row: 0, col: 2 }
-  },
-
-  {
-    id: 13,
-    name: '사원3',
-    image: 'https://cdn.jsdelivr.net/gh/choimin1243/building/temple.png',
-    position: getBlockPosition(1, 3, 50, 30),
-    type: 'religious',
-    className: 'temple-3',
-    block: { row: 0, col: 2 }
-  },
-  {
     id: 15,
     name: '아파트1',
     image: 'https://cdn.jsdelivr.net/gh/choimin1243/building/apartment.png',
@@ -162,6 +143,33 @@ export const initialHouses = [
     type: 'government',
     className: 'city-hall',
     block: { row: 1, col: 2 }
+  },
+  {
+    id: 11,
+    name: '사원1',
+    image: 'https://cdn.jsdelivr.net/gh/choimin1243/building/temple.png',
+    position: getBlockPosition(1, 0, 50, 35),
+    type: 'religious',
+    className: 'temple-1',
+    block: { row: 1, col: 0 }
+  },
+  {
+    id: 13,
+    name: '사원3',
+    image: 'https://cdn.jsdelivr.net/gh/choimin1243/building/temple.png',
+    position: getBlockPosition(1, 0, 50, 65),
+    type: 'religious',
+    className: 'temple-3',
+    block: { row: 1, col: 0 }
+  },
+  {
+    id: 20,
+    name: '이슬람 사원',
+    image: 'https://cdn.jsdelivr.net/gh/choimin1243/212122pic/islam',
+    position: getBlockPosition(0, 2, 50, 50),
+    type: 'religious',
+    className: 'islam-mosque',
+    block: { row: 0, col: 2 }
   },
 
 ];

@@ -62,10 +62,12 @@ const HouseRoadViewer = () => {
         </div>
 
         <div className="green-block green-block-top-center-right">
-        <div className="block-label">이슬람사원</div>
-
-
-
+          <div className="block-label" style={{gridArea: 'label'}}>이슬람사원</div>
+          {houses.filter(h => h.block.row === 0 && h.block.col === 2).map((house) => (
+            <div key={house.id} className="house-in-block" style={{gridArea: 'mosque'}}>
+              <img src={house.image} alt={house.name} className={`house-image ${house.className}`} />
+            </div>
+          ))}
         </div>
 
         <div className="green-block green-block-top-right">
@@ -79,8 +81,8 @@ const HouseRoadViewer = () => {
 
         {/* 중간 행: 두 도로 사이 */}
         <div className="green-block green-block-middle-left">
-          <div className="block-label" style={{gridArea: 'label'}}>사원</div>
-          {houses.filter(h => h.block.row === 0 && h.block.col === 2).map((house, index) => (
+          <div className="block-label" style={{gridArea: 'label'}}>인도사원</div>
+          {houses.filter(h => h.block.row === 1 && h.block.col === 0).map((house, index) => (
             <div
               key={house.id}
               className="house-in-block"

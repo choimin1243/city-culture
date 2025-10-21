@@ -159,11 +159,19 @@
 .green-block-top-center-right {
   left: 45%;
   overflow: hidden;
-  align-items: start;
-
   top: 1%;
-  width: 18%;
+  width: 15%;
   height: 38%;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "label"
+    "mosque";
+  align-items: center;
+  justify-items: center;
+  padding: 5px;
+  gap: 3px;
 }
 
 .green-block-top-right {
@@ -180,11 +188,12 @@
   width: 18%;
   height: 30%;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto 1fr;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr 1fr;
   grid-template-areas:
-    "label label"
-    "temple1 temple2";
+    "label"
+    "temple1"
+    "temple2";
   align-items: center;
   justify-items: center;
   padding: 5px;
@@ -399,8 +408,8 @@
 .temple-1 {
   width: 100%;
   height: 100%;
-  max-width: 200px;
-  max-height: 200px;
+  max-width: 160px;
+  max-height: 100px;
   margin: 0;
   padding: 0;
   display: block;
@@ -419,8 +428,8 @@
 .temple-3 {
   width: 100%;
   height: 100%;
-  max-width: 200px;
-  max-height: 200px;
+  max-width: 160px;
+  max-height: 100px;
   margin: 0;
   padding: 0;
   display: block;
@@ -460,6 +469,20 @@
   padding: 0;
   display: block;
   object-fit: contain;
+}
+
+.islam-mosque {
+  width: 100%;
+  height: 100%;
+  max-width: 150px;
+  max-height: 250px;
+  min-width: 100px;
+  min-height: 120px;
+  margin: 0;
+  padding: 0;
+  display: block;
+  object-fit: contain;
+  transform: scale(1.1);
 }
 
 .additional-house {

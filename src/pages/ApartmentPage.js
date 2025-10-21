@@ -13,6 +13,25 @@ const ApartmentPage = ({ onExit }) => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
+    // 복도 레이아웃 설정 (이 값들을 조정하면 전체 레이아웃이 비례적으로 변경됨)
+    const layout = {
+      stairsLeft: 80,        // 계단 왼쪽 여백
+      stairsWidth: 200,      // 계단 너비
+      corridorWallWidth: 20, // 복도 벽 두께
+      doorWidth: 120,        // 문 너비
+      doorGap: 40,           // 복도 벽과 문 사이 간격
+      rightMargin: 300,      // 오른쪽 벽과 오른쪽 문들 사이 여백 (고정)
+      corridorWidth: 600,    // 복도 너비 (이 값을 조절하면 복도 폭이 변경됨)
+    };
+
+    // 계산된 위치값들
+    const leftCorridorWallX = layout.stairsLeft + layout.stairsWidth;
+    const leftDoorsX = leftCorridorWallX + layout.corridorWallWidth + layout.doorGap;
+
+    // 오른쪽은 화면 오른쪽 끝을 기준으로 배치
+    const rightDoorsX = window.innerWidth - layout.rightMargin;
+    const rightCorridorWallX = rightDoorsX - layout.doorGap - layout.corridorWallWidth;
+
     // 충돌 가능한 오브젝트들
     const collisionObjects = [
       // 외벽들 (입구 제외)
@@ -24,40 +43,40 @@ const ApartmentPage = ({ onExit }) => {
       { x: window.innerWidth / 2 + 80, y: window.innerHeight - 40, width: window.innerWidth / 2 - 80, height: 40, type: 'wall', className: 'wall-bottom-right' },
 
       // 계단 (왼쪽)
-      { x: 80, y: 80, width: 200, height: 400, type: 'stairs', className: 'stairs-left', direction: 'up' },
+      { x: layout.stairsLeft, y: 80, width: layout.stairsWidth, height: 400, type: 'stairs', className: 'stairs-left', direction: 'up' },
 
       // 복도 벽들
       // 왼쪽 복도 벽
-      { x: 280, y: 80, width: 20, height: 200, type: 'corridor-wall', className: 'corridor-wall-1' },
+      { x: leftCorridorWallX, y: 80, width: layout.corridorWallWidth, height: 200, type: 'corridor-wall', className: 'corridor-wall-1' },
       // 오른쪽 복도 벽
-      { x: window.innerWidth - 300, y: 80, width: 20, height: 200, type: 'corridor-wall', className: 'corridor-wall-2' },
+      { x: rightCorridorWallX, y: 80, width: layout.corridorWallWidth, height: 200, type: 'corridor-wall', className: 'corridor-wall-2' },
 
       // 방문들 (왼쪽)
-      { x: 320, y: 100, width: 120, height: 20, type: 'door', className: 'door-101', room: '101호' },
-      { x: 320, y: 200, width: 120, height: 20, type: 'door', className: 'door-102', room: '102호' },
-      { x: 320, y: 300, width: 120, height: 20, type: 'door', className: 'door-103', room: '103호' },
-      { x: 320, y: 400, width: 120, height: 20, type: 'door', className: 'door-104', room: '104호' },
+      { x: leftDoorsX, y: 100, width: layout.doorWidth, height: 20, type: 'door', className: 'door-101', room: '101호' },
+      { x: leftDoorsX, y: 200, width: layout.doorWidth, height: 20, type: 'door', className: 'door-102', room: '102호' },
+      { x: leftDoorsX, y: 300, width: layout.doorWidth, height: 20, type: 'door', className: 'door-103', room: '103호' },
+      { x: leftDoorsX, y: 400, width: layout.doorWidth, height: 20, type: 'door', className: 'door-104', room: '104호' },
 
       // 방문들 (오른쪽)
-      { x: window.innerWidth - 440, y: 100, width: 120, height: 20, type: 'door', className: 'door-105', room: '105호' },
-      { x: window.innerWidth - 440, y: 200, width: 120, height: 20, type: 'door', className: 'door-106', room: '106호' },
-      { x: window.innerWidth - 440, y: 300, width: 120, height: 20, type: 'door', className: 'door-107', room: '107호' },
-      { x: window.innerWidth - 440, y: 400, width: 120, height: 20, type: 'door', className: 'door-108', room: '108호' },
+      { x: rightDoorsX, y: 100, width: layout.doorWidth, height: 20, type: 'door', className: 'door-105', room: '105호' },
+      { x: rightDoorsX, y: 200, width: layout.doorWidth, height: 20, type: 'door', className: 'door-106', room: '106호' },
+      { x: rightDoorsX, y: 300, width: layout.doorWidth, height: 20, type: 'door', className: 'door-107', room: '107호' },
+      { x: rightDoorsX, y: 400, width: layout.doorWidth, height: 20, type: 'door', className: 'door-108', room: '108호' },
 
-      // 엘리베이터
-      { x: window.innerWidth / 2 - 100, y: 80, width: 80, height: 100, type: 'elevator', className: 'elevator-1' },
-      { x: window.innerWidth / 2 + 20, y: 80, width: 80, height: 100, type: 'elevator', className: 'elevator-2' },
+      // 엘리베이터 (복도 중앙)
+      { x: (leftCorridorWallX + rightCorridorWallX) / 2 - 100, y: 80, width: 80, height: 100, type: 'elevator', className: 'elevator-1' },
+      { x: (leftCorridorWallX + rightCorridorWallX) / 2 + 20, y: 80, width: 80, height: 100, type: 'elevator', className: 'elevator-2' },
 
-      // 복도 장식물들
+      // 복도 장식물들 (복도 좌우 측에 비율로 배치)
       // 화분들
-      { x: 500, y: 150, width: 40, height: 50, type: 'plant', className: 'plant-1' },
-      { x: 700, y: 350, width: 40, height: 50, type: 'plant', className: 'plant-2' },
-      { x: window.innerWidth - 540, y: 150, width: 40, height: 50, type: 'plant', className: 'plant-3' },
-      { x: window.innerWidth - 740, y: 350, width: 40, height: 50, type: 'plant', className: 'plant-4' },
+      { x: leftCorridorWallX + (rightCorridorWallX - leftCorridorWallX) * 0.15, y: 150, width: 40, height: 50, type: 'plant', className: 'plant-1' },
+      { x: leftCorridorWallX + (rightCorridorWallX - leftCorridorWallX) * 0.25, y: 350, width: 40, height: 50, type: 'plant', className: 'plant-2' },
+      { x: leftCorridorWallX + (rightCorridorWallX - leftCorridorWallX) * 0.75, y: 150, width: 40, height: 50, type: 'plant', className: 'plant-3' },
+      { x: leftCorridorWallX + (rightCorridorWallX - leftCorridorWallX) * 0.65, y: 350, width: 40, height: 50, type: 'plant', className: 'plant-4' },
 
       // 소화기
-      { x: 600, y: 250, width: 30, height: 60, type: 'extinguisher', className: 'extinguisher-1' },
-      { x: window.innerWidth - 630, y: 250, width: 30, height: 60, type: 'extinguisher', className: 'extinguisher-2' },
+      { x: leftCorridorWallX + (rightCorridorWallX - leftCorridorWallX) * 0.2, y: 250, width: 30, height: 60, type: 'extinguisher', className: 'extinguisher-1' },
+      { x: leftCorridorWallX + (rightCorridorWallX - leftCorridorWallX) * 0.7, y: 250, width: 30, height: 60, type: 'extinguisher', className: 'extinguisher-2' },
     ];
 
     // 입구 영역 정의
@@ -66,6 +85,12 @@ const ApartmentPage = ({ onExit }) => {
       y: window.innerHeight - 100,
       width: 160,
       height: 100
+    };
+
+    // 카메라 오프셋
+    const camera = {
+      x: 0,
+      y: 0
     };
 
     class Character {
@@ -208,10 +233,21 @@ const ApartmentPage = ({ onExit }) => {
         } else {
           this.animationFrame = 0;
         }
+
+        // 카메라 업데이트 - 캐릭터를 화면 중앙에 유지
+        camera.x = this.x - window.innerWidth / 2;
+        camera.y = this.y - window.innerHeight / 2;
+
+        // 카메라 경계 제한 (맵이 작을 경우를 위한 처리)
+        const mapWidth = Math.max(window.innerWidth, rightDoorsX + 400);
+        const mapHeight = window.innerHeight;
+
+        camera.x = Math.max(0, Math.min(camera.x, mapWidth - window.innerWidth));
+        camera.y = Math.max(0, Math.min(camera.y, mapHeight - window.innerHeight));
       }
 
       draw(ctx) {
-        // 그림자
+        // 그림자 (translate로 이미 카메라 오프셋 적용됨)
         ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.beginPath();
         ctx.ellipse(this.x, this.y + this.height / 2 + 5, this.width * 0.3, this.height * 0.1, 0, 0, Math.PI * 2);
@@ -236,19 +272,20 @@ const ApartmentPage = ({ onExit }) => {
 
     // 그리기 함수들
     const drawBackground = () => {
-      // 복도 바닥 (타일)
-      const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+      // 복도 바닥 (타일) - translate로 이미 카메라 오프셋 적용됨
+      const mapWidth = Math.max(window.innerWidth, rightDoorsX + 400);
+      const gradient = ctx.createLinearGradient(0, 0, mapWidth, 0);
       gradient.addColorStop(0, '#E8E8E8');
       gradient.addColorStop(0.5, '#F5F5F5');
       gradient.addColorStop(1, '#E8E8E8');
       ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, mapWidth, canvas.height);
 
       // 타일 패턴
       ctx.strokeStyle = 'rgba(200, 200, 200, 0.5)';
       ctx.lineWidth = 1;
       const tileSize = 50;
-      for (let x = 0; x < canvas.width; x += tileSize) {
+      for (let x = 0; x < mapWidth; x += tileSize) {
         for (let y = 0; y < canvas.height; y += tileSize) {
           ctx.strokeRect(x, y, tileSize, tileSize);
         }
@@ -514,6 +551,10 @@ const ApartmentPage = ({ onExit }) => {
     const gameLoop = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // 카메라 변환 시작
+      ctx.save();
+      ctx.translate(-camera.x, -camera.y);
+
       // 배경 그리기
       drawBackground();
 
@@ -544,6 +585,9 @@ const ApartmentPage = ({ onExit }) => {
       // 캐릭터 업데이트 및 그리기
       character.update();
       character.draw(ctx);
+
+      // 카메라 변환 종료
+      ctx.restore();
 
       requestAnimationFrame(gameLoop);
     };
