@@ -11,7 +11,8 @@ export const roadBlocks = {
     { start: 0, end: 20 },    // 좌측 블록
     { start: 20, end: 40 },   // 중앙좌 블록
     { start: 40, end: 60 },   // 중앙우 블록
-    { start: 60, end: 100 }   // 우측 블록
+    { start: 60, end: 80 },   // 우측 블록
+    { start: 80, end: 100 }   // 최우측 블록 (편의점)
   ]
 };
 
@@ -65,11 +66,11 @@ export const initialHouses = [
   },
   {
     id: 7,
-    name: '학교',
-    image: '/school.png',
+    name: '정육점',
+    image: 'https://cdn.jsdelivr.net/gh/choimin1243/store/store.png',
     position: getBlockPosition(0, 3, 50, 50),
-    type: 'educational',
-    className: 'school-building',
+    type: 'commercial',
+    className: 'butcher-shop',
     block: { row: 0, col: 3 }
   },
   {
@@ -170,6 +171,33 @@ export const initialHouses = [
     type: 'religious',
     className: 'islam-mosque',
     block: { row: 0, col: 2 }
+  },
+  {
+    id: 21,
+    name: '히잡 가게',
+    image: 'https://cdn.jsdelivr.net/gh/choimin1243/2121/HIJAB.png',
+    position: getBlockPosition(1, 3, 50, 50),
+    type: 'commercial',
+    className: 'store-building',
+    block: { row: 1, col: 3 }
+  },
+  {
+    id: 22,
+    name: '편의점',
+    image: 'https://cdn.jsdelivr.net/gh/choimin1243/store/store.png',
+    position: getBlockPosition(1, 4, 50, 50),
+    type: 'commercial',
+    className: 'convenience-store',
+    block: { row: 1, col: 4 }
+  },
+  {
+    id: 23,
+    name: '학교',
+    image: 'https://cdn.jsdelivr.net/gh/choimin1243/2121/school.png',
+    position: getBlockPosition(0, 4, 50, 50),
+    type: 'educational',
+    className: 'school-building',
+    block: { row: 0, col: 4 }
   },
 
 ];

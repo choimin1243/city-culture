@@ -71,9 +71,18 @@ const HouseRoadViewer = () => {
         </div>
 
         <div className="green-block green-block-top-right">
-          
+          <div className="block-label" style={{gridArea: 'label'}}>정육점</div>
           {houses.filter(h => h.block.row === 0 && h.block.col === 3).map((house) => (
-            <div key={house.id} className="house-in-block">
+            <div key={house.id} className="house-in-block" style={{gridArea: 'butcher'}}>
+              <img src={house.image} alt={house.name} className={`house-image ${house.className}`} />
+            </div>
+          ))}
+        </div>
+
+        <div className="green-block green-block-top-right2">
+          <div className="block-label" style={{gridArea: 'label'}}>학교</div>
+          {houses.filter(h => h.block.row === 0 && h.block.col === 4).map((house) => (
+            <div key={house.id} className="house-in-block" style={{gridArea: 'school'}}>
               <img src={house.image} alt={house.name} className={`house-image ${house.className}`} />
             </div>
           ))}
@@ -117,8 +126,21 @@ const HouseRoadViewer = () => {
           ))}
         </div>
         <div className="green-block green-block-middle-right">
-          <div className="block-label" style={{gridArea: 'label'}}>사원</div>
-          {houses.filter(h => h.block.row === 1 && h.block.col === 3).map((house, index) => (
+          <div className="block-label" style={{gridArea: 'label'}}>히잡가게</div>
+          {houses.filter(h => h.block.row === 1 && h.block.col === 3).map((house) => (
+            <div
+              key={house.id}
+              className="house-in-block"
+              style={{gridArea: 'store'}}
+            >
+              <img src={house.image} alt={house.name} className={`house-image ${house.className}`} />
+            </div>
+          ))}
+        </div>
+
+        <div className="green-block green-block-middle2-right">
+          <div className="block-label" style={{gridArea: 'label'}}>편의점</div>
+          {houses.filter(h => h.block.row === 1 && h.block.col === 4).map((house, index) => (
             <div
               key={house.id}
               className="house-in-block"
@@ -128,6 +150,9 @@ const HouseRoadViewer = () => {
             </div>
           ))}
         </div>
+
+
+
 
         {/* 하단 행: 두 번째 도로 아래 */}
         <div className="green-block green-block-bottom-left"></div>
