@@ -1,0 +1,98 @@
+.school-page {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  background-color: #FFF8E7;
+  z-index: 9999;
+}
+
+.school-page canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: default;
+}
+
+.school-info {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(65, 105, 225, 0.9);
+  color: #FFFFFF;
+  padding: 15px 30px;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  border: 3px solid #FFD700;
+  z-index: 10000;
+}
+
+.school-info h2 {
+  margin: 0 0 5px 0;
+  font-size: 28px;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.school-info p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.school-exit-button-container {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+}
+
+.exit-button {
+  background: linear-gradient(135deg, #4169E1, #5B8EF5);
+  color: #FFFFFF;
+  border: 3px solid #FFD700;
+  padding: 15px 40px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.exit-button:hover {
+  background: linear-gradient(135deg, #5B8EF5, #7AA8FF);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+.exit-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 8px 20px rgba(65, 105, 225, 0.5);
+  }
+  50% {
+    box-shadow: 0 8px 30px rgba(255, 215, 0, 0.8);
+  }
+}

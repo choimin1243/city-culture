@@ -9,6 +9,7 @@ import IslamMosquePage from '../pages/IslamMosquePage';
 import StorePage from '../pages/StorePage';
 import ConvenienceStorePage from '../pages/ConvenienceStorePage';
 import ButcherShopPage from '../pages/ButcherShopPage';
+import SchoolPage from '../pages/SchoolPage';
 
 const IranCharacter = () => {
   const canvasRef = useRef(null);
@@ -22,6 +23,7 @@ const IranCharacter = () => {
   const [showStore, setShowStore] = useState(false);
   const [showConvenienceStore, setShowConvenienceStore] = useState(false);
   const [showButcherShop, setShowButcherShop] = useState(false);
+  const [showSchool, setShowSchool] = useState(false);
   const handleExitRestaurantRef = useRef(null);
   const handleExitParkRef = useRef(null);
   const handleExitTempleRef = useRef(null);
@@ -31,6 +33,7 @@ const IranCharacter = () => {
   const handleExitStoreRef = useRef(null);
   const handleExitConvenienceStoreRef = useRef(null);
   const handleExitButcherShopRef = useRef(null);
+  const handleExitSchoolRef = useRef(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isNearRestaurant, setIsNearRestaurant] = useState(false);
   const [isNearPark, setIsNearPark] = useState(false);
@@ -41,6 +44,7 @@ const IranCharacter = () => {
   const [isNearStore, setIsNearStore] = useState(false);
   const [isNearConvenienceStore, setIsNearConvenienceStore] = useState(false);
   const [isNearButcherShop, setIsNearButcherShop] = useState(false);
+  const [isNearSchool, setIsNearSchool] = useState(false);
   const handleNearRestaurantRef = useRef(null);
   const handleNearParkRef = useRef(null);
   const handleNearTempleRef = useRef(null);
@@ -50,6 +54,7 @@ const IranCharacter = () => {
   const handleNearStoreRef = useRef(null);
   const handleNearConvenienceStoreRef = useRef(null);
   const handleNearButcherShopRef = useRef(null);
+  const handleNearSchoolRef = useRef(null);
   const isNearRestaurantRef = useRef(false);
   const isNearParkRef = useRef(false);
   const isNearTempleRef = useRef(false);
@@ -59,13 +64,14 @@ const IranCharacter = () => {
   const isNearStoreRef = useRef(false);
   const isNearConvenienceStoreRef = useRef(false);
   const isNearButcherShopRef = useRef(false);
+  const isNearSchoolRef = useRef(false);
 
   // 금액과 똥 개수 상태
   const [money, setMoney] = useState(10000);
   const [poopCount, setPoopCount] = useState(0);
 
   useEffect(() => {
-    if (showRestaurant || showPark || showTemple || showApartment || showCityHall || showIslamMosque || showStore || showButcherShop || showConvenienceStore) return; // 레스토랑이나 공원, 사원, 아파트, 시청, 이슬람 사원, 매점, 정육점, 편의점이 표시 중이면 게임 루프 시작하지 않음
+    if (showRestaurant || showPark || showTemple || showApartment || showCityHall || showIslamMosque || showStore || showButcherShop || showConvenienceStore || showSchool) return; // 레스토랑이나 공원, 사원, 아파트, 시청, 이슬람 사원, 매점, 정육점, 편의점, 학교가 표시 중이면 게임 루프 시작하지 않음
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -213,6 +219,20 @@ const IranCharacter = () => {
       return null;
     };
 
+    const getSchoolImageBounds = () => {
+      const schoolImg = document.querySelector('.house-image.school-building');
+      if (schoolImg) {
+        const rect = schoolImg.getBoundingClientRect();
+        return {
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+          width: rect.width,
+          height: rect.height
+        };
+      }
+      return null;
+    };
+
     // 캐릭터 클래스
     class Character {
       constructor(canvasWidth, canvasHeight, initialX, initialY, getRestaurantBounds) {
@@ -300,7 +320,7 @@ const IranCharacter = () => {
         window.removeEventListener('keyup', this.handleKeyUp);
       }
 
-      update(onNearRestaurant, onNearPark, onNearTemple, onNearApartment, onNearCityHall, onNearIslamMosque, onNearStore, onNearButcherShop, onNearConvenienceStore, getRestaurantBounds, getParkBounds, getTempleBounds, getApartmentBounds, getCityHallBounds, getIslamMosqueBounds, getStoreBounds, getButcherShopBounds, getConvenienceStoreBounds) {
+      update(onNearRestaurant, onNearPark, onNearTemple, onNearApartment, onNearCityHall, onNearIslamMosque, onNearStore, onNearButcherShop, onNearConvenienceStore, onNearSchool, getRestaurantBounds, getParkBounds, getTempleBounds, getApartmentBounds, getCityHallBounds, getIslamMosqueBounds, getStoreBounds, getButcherShopBounds, getConvenienceStoreBounds, getSchoolBounds) {
         // 이동 처리
         let targetVelX = 0;
         let targetVelY = 0;
@@ -506,6 +526,23 @@ const IranCharacter = () => {
           onNearConvenienceStore(isNearConvenienceStore);
         }
 
+        // 학교 근처 여부 체크
+        let isNearSchool = false;
+        if (getSchoolBounds) {
+          const schoolBounds = getSchoolBounds();
+          if (schoolBounds) {
+            const dx = this.x - schoolBounds.x;
+            const dy = this.y - schoolBounds.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const triggerDistance = Math.max(schoolBounds.width, schoolBounds.height) / 2 + 50;
+            isNearSchool = distance < triggerDistance;
+          }
+        }
+
+        if (onNearSchool) {
+          onNearSchool(isNearSchool);
+        }
+
         // 애니메이션 프레임 업데이트
         if (this.isMoving) {
           this.animationCounter++;
@@ -692,6 +729,16 @@ const IranCharacter = () => {
       });
     };
 
+    handleNearSchoolRef.current = (isNear) => {
+      isNearSchoolRef.current = isNear;
+      setIsNearSchool(prev => {
+        if (prev !== isNear) {
+          return isNear;
+        }
+        return prev;
+      });
+    };
+
     // Exit handler들을 ref에 저장
     handleExitRestaurantRef.current = () => {
       // 레스토랑 닫기
@@ -728,11 +775,16 @@ const IranCharacter = () => {
       setShowStore(false);
     };
 
+    handleExitSchoolRef.current = () => {
+      // 학교 닫기
+      setShowSchool(false);
+    };
+
     const gameLoop = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // ref를 통해 호출, DOM 요소 위치 함수도 전달
-      if (handleNearRestaurantRef.current && handleNearParkRef.current && handleNearTempleRef.current && handleNearApartmentRef.current && handleNearCityHallRef.current && handleNearIslamMosqueRef.current && handleNearStoreRef.current && handleNearButcherShopRef.current && handleNearConvenienceStoreRef.current) {
+      if (handleNearRestaurantRef.current && handleNearParkRef.current && handleNearTempleRef.current && handleNearApartmentRef.current && handleNearCityHallRef.current && handleNearIslamMosqueRef.current && handleNearStoreRef.current && handleNearButcherShopRef.current && handleNearConvenienceStoreRef.current && handleNearSchoolRef.current) {
         character.update(
           handleNearRestaurantRef.current,
           handleNearParkRef.current,
@@ -743,6 +795,7 @@ const IranCharacter = () => {
           handleNearStoreRef.current,
           handleNearButcherShopRef.current,
           handleNearConvenienceStoreRef.current,
+          handleNearSchoolRef.current,
           getRestaurantImageBounds,
           getParkImageBounds,
           getTempleImageBounds,
@@ -751,7 +804,8 @@ const IranCharacter = () => {
           getIslamMosqueImageBounds,
           getStoreImageBounds,
           getButcherShopImageBounds,
-          getConvenienceStoreImageBounds
+          getConvenienceStoreImageBounds,
+          getSchoolImageBounds
         );
       }
 
@@ -789,7 +843,7 @@ const IranCharacter = () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [showRestaurant, showPark, showTemple, showApartment, showCityHall, showIslamMosque, showStore, showButcherShop, showConvenienceStore]); // 건물 표시 상태가 변경되면 useEffect 재실행
+  }, [showRestaurant, showPark, showTemple, showApartment, showCityHall, showIslamMosque, showStore, showButcherShop, showConvenienceStore, showSchool]); // 건물 표시 상태가 변경되면 useEffect 재실행
 
   const handleExitRestaurant = () => {
     if (handleExitRestaurantRef.current) {
@@ -998,6 +1052,29 @@ const IranCharacter = () => {
     setShowConvenienceStore(true);
   };
 
+  const handleExitSchool = () => {
+    if (handleExitSchoolRef.current) {
+      handleExitSchoolRef.current();
+    }
+    setTimeout(() => {
+      if (gameRef.current) {
+        const schoolImg = document.querySelector('.house-image.school-building');
+        if (schoolImg) {
+          const rect = schoolImg.getBoundingClientRect();
+          gameRef.current.setPosition(
+            rect.left + rect.width / 2,
+            rect.top + rect.height / 2 + 80
+          );
+        }
+      }
+    }, 0);
+    setShowSchool(false);
+  };
+
+  const handleEnterSchool = () => {
+    setShowSchool(true);
+  };
+
   if (showRestaurant) {
     return <IndianRestaurantPage onExit={handleExitRestaurant} />;
   }
@@ -1032,6 +1109,10 @@ const IranCharacter = () => {
 
   if (showConvenienceStore) {
     return <ConvenienceStorePage onExit={handleExitConvenienceStore} />;
+  }
+
+  if (showSchool) {
+    return <SchoolPage onExit={handleExitSchool} />;
   }
 
   return (
@@ -1115,6 +1196,14 @@ const IranCharacter = () => {
         <div className="store-entrance-button-overlay">
           <button onClick={handleEnterConvenienceStore} className="store-entrance-button">
             🏪 편의점 들어가기
+          </button>
+        </div>
+      )}
+
+      {isNearSchool && (
+        <div className="store-entrance-button-overlay">
+          <button onClick={handleEnterSchool} className="store-entrance-button">
+            🏫 학교 들어가기
           </button>
         </div>
       )}
